@@ -68,3 +68,7 @@ lib/generated_plugin_registrant.dart
 **/firebase_options.dart
 **/.firebaserc
 **/.firebase/
+firebase.json
+pubspec.lock
+.metadata
+analysis_options.yaml
