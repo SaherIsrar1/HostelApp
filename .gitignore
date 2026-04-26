@@ -1,0 +1,70 @@
+# Miscellaneous
+*.class
+*.log
+*.pyc
+*.swp
+.DS_Store
+.atom/
+.buildlog/
+.history
+.svn/
+
+# IntelliJ related
+*.iml
+*.ipr
+*.iws
+.idea/
+
+# The following file contains user-specific configurations,
+# and should be ignored even if the .idea folder is tracked.
+.idea/workspace.xml
+
+# Visual Studio Code related
+.vscode/
+
+# Flutter/Dart/Pub related
+**/doc/api/
+**/ios/Flutter/.last_build_id
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+.pub-cache/
+.pub/
+/build/
+
+# Android related
+**/android/app/google-services.json
+**/android/key.properties
+**/android/local.properties
+**/android/**/gradle-wrapper.jar
+.gradle/
+captures/
+
+# iOS/macOS related
+**/ios/Flutter/Generated.xcconfig
+**/ios/Flutter/flutter_export_environment.sh
+**/ios/ServiceDefinitions.json
+**/ios/Runner/GeneratedPluginRegistrant.h
+**/ios/Runner/GeneratedPluginRegistrant.m
+**/macos/Flutter/ephemeral/
+**/macos/Flutter/GeneratedPluginRegistrant.swift
+**/macos/Runner/GeneratedPluginRegistrant.swift
+**/ios/.generated/
+**/ios/Pods/
+**/ios/Podfile.lock
+
+# Web related
+lib/generated_plugin_registrant.dart
+
+# Exceptions to above rules
+!**/ios/Runner/Info.plist
+!**/ios/Runner/Assets.xcassets/AppIcon.appiconset/Contents.json
+
+
+# Firebase - Generated and Sensitive Files
+**/google-services.json
+**/GoogleService-Info.plist
+**/firebase_options.dart
+**/.firebaserc
+**/.firebase/
