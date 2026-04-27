@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../utils/app_colors.dart';
 import '../../models/hostel_model.dart';
+import '../../widgets/skeleton_loader.dart';
 import '../auth/login_screen.dart';
 import 'hostel_detail_screen.dart';
 import 'my_bookings_screen.dart';
@@ -183,9 +184,7 @@ class _HostelListScreenState extends State<HostelListScreen> {
                   .snapshots(),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
-                  return Center(
-                    child: CircularProgressIndicator(color: AppColors.primary),
-                  );
+                  return const HostelListSkeleton(count: 4);
                 }
 
                 if (snapshot.hasError) {
