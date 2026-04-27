@@ -12,6 +12,7 @@ import '../../models/comment_model.dart';
 import '../../services/comment_service.dart';
 import '../../utils/app_colors.dart';
 import '../../widgets/rating_stars.dart';
+import '../../widgets/skeleton_loader.dart';
 import 'booking_screen.dart';
 import 'add_review_screen.dart';
 
@@ -603,10 +604,49 @@ class _HostelDetailScreenState extends State<HostelDetailScreen> {
         backgroundColor: AppColors.background,
         appBar: AppBar(
           backgroundColor: AppColors.primary,
+          foregroundColor: Colors.white,
           title: const Text('Loading...'),
         ),
-        body: Center(
-          child: CircularProgressIndicator(color: AppColors.primary),
+        body: SingleChildScrollView(
+          physics: const NeverScrollableScrollPhysics(),
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Image skeleton
+              SkeletonBox(
+                width: double.infinity,
+                height: 300,
+                borderRadius: 0,
+              ),
+              const SizedBox(height: 20),
+              // Title skeleton
+              SkeletonBox(width: 200, height: 24),
+              const SizedBox(height: 12),
+              SkeletonBox(width: 140, height: 14),
+              const SizedBox(height: 20),
+              // Price card skeleton
+              SkeletonBox(width: double.infinity, height: 70, borderRadius: 15),
+              const SizedBox(height: 24),
+              SkeletonBox(width: 180, height: 20),
+              const SizedBox(height: 12),
+              SkeletonBox(width: double.infinity, height: 80, borderRadius: 12),
+              const SizedBox(height: 24),
+              // Amenities skeleton
+              SkeletonBox(width: 160, height: 20),
+              const SizedBox(height: 12),
+              Wrap(
+                spacing: 12,
+                runSpacing: 12,
+                children: List.generate(5, (i) => SkeletonBox(width: 100, height: 38, borderRadius: 12)),
+              ),
+              const SizedBox(height: 24),
+              // Map skeleton
+              SkeletonBox(width: 220, height: 20),
+              const SizedBox(height: 12),
+              SkeletonBox(width: double.infinity, height: 250, borderRadius: 15),
+            ],
+          ),
         ),
       );
     }
@@ -1000,8 +1040,11 @@ class _HostelDetailScreenState extends State<HostelDetailScreen> {
                             ),
                             children: [
                               TileLayer(
-                                urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                                urlTemplate:
+                                    'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',
+                                subdomains: const ['a', 'b', 'c', 'd'],
                                 userAgentPackageName: 'com.example.hostel_app',
+                                maxZoom: 20,
                               ),
                               if (_currentPosition != null)
                                 PolylineLayer(
