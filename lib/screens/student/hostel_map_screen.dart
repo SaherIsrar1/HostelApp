@@ -20,11 +20,16 @@ class _HostelMapScreenState extends State<HostelMapScreen> {
   Position? _currentPosition;
   bool _isLoadingLocation = false;
   HostelModel? _selectedHostel;
+  bool _mapLoaded = false;
 
   @override
   void initState() {
     super.initState();
     _getCurrentLocation();
+    // Simulate map tile load delay for skeleton
+    Future.delayed(const Duration(milliseconds: 600), () {
+      if (mounted) setState(() => _mapLoaded = true);
+    });
   }
 
   // Get user's current location
@@ -88,7 +93,9 @@ class _HostelMapScreenState extends State<HostelMapScreen> {
         appBar: AppBar(
           title: const Text("Hostel Map"),
           backgroundColor: AppColors.primary,
+          foregroundColor: Colors.white,
         ),
+        backgroundColor: AppColors.background,
         body: const Center(
           child: Text("No hostels to show on map."),
         ),
@@ -115,6 +122,7 @@ class _HostelMapScreenState extends State<HostelMapScreen> {
           style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
         ),
         centerTitle: true,
+        iconTheme: const IconThemeData(color: Colors.white),
         actions: [
           IconButton(
             icon: const Icon(Icons.list, color: Colors.white),
@@ -125,79 +133,69 @@ class _HostelMapScreenState extends State<HostelMapScreen> {
       ),
       body: Stack(
         children: [
-          // Map
-          FlutterMap(
-            mapController: _mapController,
-            options: MapOptions(
-              initialCenter: _currentPosition != null
-                  ? LatLng(_currentPosition!.latitude, _currentPosition!.longitude)
-                  : initialPosition,
-              initialZoom: 13.0,
-              onTap: (_, _) {
-                setState(() => _selectedHostel = null);
-              },
-            ),
-            children: [
-              TileLayer(
-                urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-                userAgentPackageName: 'com.example.hostel_app',
-              ),
-              MarkerLayer(
-                markers: [
-                  // User location marker
-                  if (_currentPosition != null)
-                    Marker(
-                      point: LatLng(_currentPosition!.latitude, _currentPosition!.longitude),
-                      width: 80,
-                      height: 80,
+          // ── Skeleton overlay until map tiles start loading ──
+          if (!_mapLoaded)
+            Container(
+              color: const Color(0xFFE8EDF5),
+              child: Column(
+                children: [
+                  Expanded(
+                    child: Center(
                       child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                            decoration: BoxDecoration(
-                              color: Colors.green,
-                              borderRadius: BorderRadius.circular(8),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withOpacity(0.3),
-                                  blurRadius: 4,
-                                ),
-                              ],
-                            ),
-                            child: const Text(
-                              'You',
-                              style: TextStyle(
-                                fontSize: 11,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
-                              ),
-                            ),
-                          ),
-                          const Icon(Icons.my_location, color: Colors.green, size: 35),
+                          _shimmerBox(80, 80, radius: 40),
+                          const SizedBox(height: 16),
+                          _shimmerBox(160, 16),
+                          const SizedBox(height: 8),
+                          _shimmerBox(120, 12),
                         ],
                       ),
                     ),
-                  // Hostel markers
-                  ...widget.hostels.map((hostel) {
-                    final isSelected = _selectedHostel?.name == hostel.name;
-                    return Marker(
-                      point: LatLng(hostel.latitude, hostel.longitude),
-                      width: isSelected ? 120 : 100,
-                      height: isSelected ? 120 : 100,
-                      child: GestureDetector(
-                        onTap: () {
-                          setState(() => _selectedHostel = hostel);
-                          _mapController.move(
-                            LatLng(hostel.latitude, hostel.longitude),
-                            15.0,
-                          );
-                        },
+                  ),
+                ],
+              ),
+            ),
+
+          // ── Map ──
+          AnimatedOpacity(
+            opacity: _mapLoaded ? 1.0 : 0.0,
+            duration: const Duration(milliseconds: 400),
+            child: FlutterMap(
+              mapController: _mapController,
+              options: MapOptions(
+                initialCenter: _currentPosition != null
+                    ? LatLng(_currentPosition!.latitude, _currentPosition!.longitude)
+                    : initialPosition,
+                initialZoom: 13.0,
+                onTap: (_, __) {
+                  setState(() => _selectedHostel = null);
+                },
+              ),
+              children: [
+                // CartoDB Voyager — crisp, modern, free, no API key needed
+                TileLayer(
+                  urlTemplate:
+                      'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',
+                  subdomains: const ['a', 'b', 'c', 'd'],
+                  userAgentPackageName: 'com.example.hostel_app',
+                  maxZoom: 20,
+                ),
+                MarkerLayer(
+                  markers: [
+                    // User location marker
+                    if (_currentPosition != null)
+                      Marker(
+                        point: LatLng(_currentPosition!.latitude, _currentPosition!.longitude),
+                        width: 80,
+                        height: 80,
                         child: Column(
+                          mainAxisSize: MainAxisSize.min,
                           children: [
                             Container(
                               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                               decoration: BoxDecoration(
-                                color: isSelected ? AppColors.accent : AppColors.primary,
+                                color: AppColors.success,
                                 borderRadius: BorderRadius.circular(8),
                                 boxShadow: [
                                   BoxShadow(
@@ -206,37 +204,82 @@ class _HostelMapScreenState extends State<HostelMapScreen> {
                                   ),
                                 ],
                               ),
-                              child: Text(
-                                'Rs ${hostel.price}',
-                                style: const TextStyle(
+                              child: const Text(
+                                'You',
+                                style: TextStyle(
                                   fontSize: 11,
                                   fontWeight: FontWeight.bold,
                                   color: Colors.white,
                                 ),
                               ),
                             ),
-                            Icon(
-                              hostel.gender == "Boys" ? Icons.boy : Icons.girl,
-                              color: isSelected ? AppColors.accent : AppColors.primary,
-                              size: isSelected ? 45 : 40,
-                            ),
+                            Icon(Icons.my_location, color: AppColors.success, size: 35),
                           ],
                         ),
                       ),
-                    );
-                  }),
-                ],
-              ),
-            ],
+                    // Hostel markers
+                    ...widget.hostels.map((hostel) {
+                      final isSelected = _selectedHostel?.name == hostel.name;
+                      return Marker(
+                        point: LatLng(hostel.latitude, hostel.longitude),
+                        width: isSelected ? 120 : 100,
+                        height: isSelected ? 120 : 100,
+                        child: GestureDetector(
+                          onTap: () {
+                            setState(() => _selectedHostel = hostel);
+                            _mapController.move(
+                              LatLng(hostel.latitude, hostel.longitude),
+                              15.0,
+                            );
+                          },
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                decoration: BoxDecoration(
+                                  color: isSelected ? AppColors.accent : AppColors.primary,
+                                  borderRadius: BorderRadius.circular(8),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black.withOpacity(0.3),
+                                      blurRadius: 4,
+                                    ),
+                                  ],
+                                ),
+                                child: Text(
+                                  'Rs ${hostel.price}',
+                                  style: const TextStyle(
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                              ),
+                              Icon(
+                                hostel.gender == "Boys" ? Icons.boy : Icons.girl,
+                                color: isSelected ? AppColors.accent : AppColors.primary,
+                                size: isSelected ? 45 : 40,
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    }),
+                  ],
+                ),
+              ],
+            ),
           ),
 
-          // My Location Button (Top Right)
+          // ── My Location Button (Top Right) ──
           Positioned(
             top: 16,
             right: 16,
             child: FloatingActionButton.small(
               onPressed: _isLoadingLocation ? null : _getCurrentLocation,
               backgroundColor: Colors.white,
+              elevation: 4,
               child: _isLoadingLocation
                   ? SizedBox(
                 width: 20,
@@ -250,7 +293,7 @@ class _HostelMapScreenState extends State<HostelMapScreen> {
             ),
           ),
 
-          // Selected Hostel Card (Bottom)
+          // ── Selected Hostel Card (Bottom) ──
           if (_selectedHostel != null)
             Positioned(
               bottom: 0,
@@ -264,9 +307,9 @@ class _HostelMapScreenState extends State<HostelMapScreen> {
                   borderRadius: BorderRadius.circular(20),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.2),
-                      blurRadius: 10,
-                      offset: const Offset(0, -5),
+                      color: AppColors.primary.withOpacity(0.15),
+                      blurRadius: 16,
+                      offset: const Offset(0, -4),
                     ),
                   ],
                 ),
@@ -395,7 +438,7 @@ class _HostelMapScreenState extends State<HostelMapScreen> {
               ),
             ),
 
-          // Hostel Count Badge (Top Left)
+          // ── Hostel Count Badge (Top Left) ──
           Positioned(
             top: 16,
             left: 16,
@@ -428,6 +471,28 @@ class _HostelMapScreenState extends State<HostelMapScreen> {
           ),
         ],
       ),
+    );
+  }
+
+  /// Simple shimmer box for the loading skeleton
+  Widget _shimmerBox(double width, double height, {double radius = 8}) {
+    return TweenAnimationBuilder<double>(
+      tween: Tween(begin: 0.5, end: 1.0),
+      duration: const Duration(milliseconds: 900),
+      builder: (context, value, child) {
+        return Container(
+          width: width,
+          height: height,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(radius),
+            color: Color.lerp(
+              const Color(0xFFCBD5E1),
+              const Color(0xFFE2E8F0),
+              value,
+            ),
+          ),
+        );
+      },
     );
   }
 }
