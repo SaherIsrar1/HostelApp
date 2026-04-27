@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 
 class AppColors {
-  // Main theme color - Deep Blue
-  static const Color primary = Color(0xFFF3AB63);      // Deep Blue (main)
-  static const Color secondary = Color(0xFFF3AB63);    // Lighter Blue (for accents)
-  static const Color accent = Color(0xFFF97316);       // Orange (for CTAs)
+  // Main theme color - Deep Navy Blue
+  static const Color primary = Color(0xFF1E3A8A);      // Deep Navy Blue (main)
+  static const Color secondary = Color(0xFF0F2C59);    // Darker Navy (for gradients)
+  static const Color accent = Color(0xFF8FBC8F);       // Soft Sage Green (for CTAs & highlights)
 
   // Background colors
-  static const Color background = Color(0xFFF8FAFC);   // Very light blue-grey
+  static const Color background = Color(0xFFF8F5F0);   // Warm Off-White
   static const Color cardBackground = Color(0xFFFFFFFF); // White cards
 
   // Text colors
